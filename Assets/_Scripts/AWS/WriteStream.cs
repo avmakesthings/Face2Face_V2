@@ -5,9 +5,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.iOS;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Utils;
 
 
@@ -47,7 +50,7 @@ public class WriteStream : MonoBehaviour
     {
         public System.DateTime ApproximateCaptureTime;
         public int FrameCount;
-        byte[] ImageBytes;
+        public byte[] ImageBytes;
 
 
         public FramePackage(System.DateTime time, int count, byte[] data)
@@ -56,7 +59,14 @@ public class WriteStream : MonoBehaviour
             this.FrameCount = count;
             this.ImageBytes = data;
         }
+
+        public string serialize(){
+            return JsonConvert.SerializeObject(this);
+        }
+
     }
+
+
 
 
     // Use this for initialization
@@ -148,17 +158,19 @@ public class WriteStream : MonoBehaviour
 
         TextureScale.Bilinear(tex, tex.width / 10, tex.height / 10);
 
-
         //Debug to write texture into PNG
-        byte[] bytes = tex.EncodeToPNG();
-        File.WriteAllBytes(Application.dataPath + "/../SavedScreen.png", bytes);
+        //byte[] bytes = tex.EncodeToPNG();
+        //File.WriteAllBytes(Application.dataPath + "/../SavedScreen.png", bytes);
 
+        byte[] b = Color32ArrayToByteArray(tex.GetPixels32());
+        //FramePackage dataToStream = new FramePackage(System.DateTime.UtcNow.ToString(),frames,b);
+        FramePackage dataToStream = new FramePackage(System.DateTime.UtcNow, frames, b);
+        Debug.Log(dataToStream.ApproximateCaptureTime);
+        //string JSONdataToStream = JsonUtility.ToJson(dataToStream);
+        string JSONdataToStream = dataToStream.serialize();
 
-        //byte[] b = Color32ArrayToByteArray(tex.GetPixels32());
-        //FramePackage dataToStream = new FramePackage(System.DateTime.UtcNow,frames,b);
-        //string encodedDataToStream = System.Convert.ToBase64String(ObjectSerializationExtension.SerializeToByteArray(dataToStream));
-        //print(encodedDataToStream.Length);
-        //_C.PutRecord(encodedDataToStream, "FrameStream", (response) =>{});
+        Debug.Log("Sending image to Kinesis");
+        _C.PutRecord(JSONdataToStream, "FrameStream", (response) =>{});
     }
 
 
@@ -176,4 +188,18 @@ public class WriteStream : MonoBehaviour
         return bytes;
     }
 
+
+    // A helper function to convert a JSON string to a byte array
+    public static byte[] JsonStringToByteArray(string jsonString)
+    {
+        var encoding = new UTF8Encoding();
+        return encoding.GetBytes(jsonString.Substring(1, jsonString.Length - 2));
+    }
+
+
+    public static string Base64Encode(string plainText)
+    {
+        var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+        return System.Convert.ToBase64String(plainTextBytes);
+    }
 }
