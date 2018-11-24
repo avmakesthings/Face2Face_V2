@@ -1183,6 +1183,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IdentityPoolId: 
+  CognitoIdentityRegion: us-east-1
+  KinesisRegion: us-east-1
   StreamNameField: {fileID: 842288497}
   RecordField: {fileID: 1778397739}
   PutRecordButton: {fileID: 1101270758}

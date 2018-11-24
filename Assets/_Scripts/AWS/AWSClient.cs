@@ -57,22 +57,10 @@ public delegate void HandleReadStreamResponse(ReadStreamResponse response);
 
 public class AWSClient : MonoBehaviour
 {
-	
+
     private string IdentityPoolId;
     public Amazon.RegionEndpoint RegionEndpoint = RegionEndpoint.USWest2;
 
-    private void Awake()
-    {
-        IdentityPoolId = GetComponent<AWSConfig>().IdentityPoolId;
-
-    }
-
-    void Start()
-
-	{
-
-        UnityInitializer.AttachToGameObject(this.gameObject);
-	}
 
 	#region private members
 
@@ -83,12 +71,15 @@ public class AWSClient : MonoBehaviour
 	{
 		get
 		{
-			if (_credentials == null)
-				AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
-				_credentials = new CognitoAWSCredentials(
-					IdentityPoolId,
-					RegionEndpoint
-				); 
+            if (_credentials == null){
+                AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
+                _credentials = new CognitoAWSCredentials(
+                    IdentityPoolId,
+                    RegionEndpoint
+                ); 
+                Debug.Log("Created Kinesis credentials");
+            }
+
 			return _credentials;
 		}
 	}
@@ -103,12 +94,28 @@ public class AWSClient : MonoBehaviour
 					Credentials, 
 					RegionEndpoint
 				);
+                Debug.Log("Created Kinesis client");
 			}
 			return _kinesisClient;
 		}
 	}
 
 	#endregion
+
+    private void Awake()
+    {
+        IdentityPoolId = GetComponent<AWSConfig>().IdentityPoolId;
+
+    }
+
+    void Start()
+    {
+
+        UnityInitializer.AttachToGameObject(this.gameObject);
+        Debug.Log("kinesis client =" + _kinesisClient);
+        Debug.Log("kinesis client = " + _credentials);
+    }
+
 
 	# region Put Record
 	/// <summary>
@@ -158,13 +165,11 @@ public class AWSClient : MonoBehaviour
 	/// </summary>
 	public void ListStreams( HandleListStreamsResponse cb)
 	{
-		Debug.Log("Listing Streams");
 		Client.ListStreamsAsync(new ListStreamsRequest(),
 		(responseObject) =>
 		{
-			if (responseObject.Exception == null)
+            if (responseObject.Exception == null)
 			{
-				Debug.Log("Got Response!");
 				cb(new ListStreamsResponse(){
 					ResponseMetadata = responseObject.Response.ResponseMetadata,
 					HttpStatusCode = (int)responseObject.Response.HttpStatusCode,
@@ -173,9 +178,8 @@ public class AWSClient : MonoBehaviour
 			}
 			else
 			{
-				Debug.LogError(responseObject.Exception);
+                Debug.LogError(responseObject.Exception);
 				cb(new ListStreamsResponse());
-
 			}
 		}
 		);

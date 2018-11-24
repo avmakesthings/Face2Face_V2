@@ -35,7 +35,6 @@ public class Read_PrintStream : MonoBehaviour {
 			string streamName = "AmazonRekognitionStreamOut";
 
 
-
 			awsClient.ReadStream(streamName, (response)=>{
 				List<Amazon.Kinesis.Model.Record> records = response.Records;
 				foreach(Amazon.Kinesis.Model.Record awsRecord in records){
@@ -57,11 +56,11 @@ public class Read_PrintStream : MonoBehaviour {
 								string s = printEmotion(emotion.Type,emotion.Confidence);
 								emotionStr = emotionStr + s;
 							}
-							emotionText.text = emotionStr;
+							//emotionText.text = emotionStr;
 
-							printConfidence(record.rekog_face_details[0].Mustache.Confidence, record.rekog_face_details[0].Mustache.Value,mustacheText);
-							printConfidence(record.rekog_face_details[0].Beard.Confidence,record.rekog_face_details[0].Beard.Value ,beardText);
-							printConfidence(record.rekog_face_details[0].Eyeglasses.Confidence, record.rekog_face_details[0].Eyeglasses.Value, glassesText);
+							//printConfidence(record.rekog_face_details[0].Mustache.Confidence, record.rekog_face_details[0].Mustache.Value,mustacheText);
+							//printConfidence(record.rekog_face_details[0].Beard.Confidence,record.rekog_face_details[0].Beard.Value ,beardText);
+							//printConfidence(record.rekog_face_details[0].Eyeglasses.Confidence, record.rekog_face_details[0].Eyeglasses.Value, glassesText);
 
 
 						}

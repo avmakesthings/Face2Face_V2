@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Text;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 
@@ -40,5 +41,37 @@ namespace Utils
                 return obj;
             }
         }
+
+        // A helper function to convert a color32 array to a byte array 
+        public static byte[] Color32ArrayToByteArray(Color32[] colors)
+        {
+            byte[] bytes = new byte[colors.Length * 4];
+            for (int i = 0; i < bytes.Length / 4; i += 4)
+            {
+                bytes[i] = colors[i].r;
+                bytes[i + 1] = colors[i].g;
+                bytes[i + 2] = colors[i].b;
+                bytes[i + 3] = colors[i].a;
+            }
+            return bytes;
+        }
+
+
+        // A helper function to convert a JSON string to a byte array
+        public static byte[] JsonStringToByteArray(string jsonString)
+        {
+            var encoding = new UTF8Encoding();
+            return encoding.GetBytes(jsonString.Substring(1, jsonString.Length - 2));
+        }
+
+
+        public static string Base64Encode(string plainText)
+        {
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+            return System.Convert.ToBase64String(plainTextBytes);
+        }
+
+
+
     }
 }

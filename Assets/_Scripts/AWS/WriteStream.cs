@@ -1,39 +1,49 @@
-﻿//
-
-
-#define DEBUG_Webcam
-//#define DEBUG_PrintStreamBytes
+﻿
+//#define DEBUG_Webcam
+#define AR_camera
 
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.XR.iOS;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Utils;
 
 
 [RequireComponent(typeof(AWSClient))]
+[RequireComponent(typeof(AWSConfig))]
 public class WriteStream : MonoBehaviour
 {
-#if DEBUG_Webcam 
-
+    
+#region Webcam_fields
+#if DEBUG_Webcam
     private bool camAvailable;
     private bool isInitialized = false;
     private WebCamTexture webCam;
     private Texture defaultBackground;
-    private int frames = 0;
-    Color32[] data;
 
+    Color32[] data;
 
     public RawImage background;
     public AspectRatioFitter fit;
-#endif 
+#endif
+#endregion
 
-    public int captureRate; 
 
-    //TODO : add field for AR camera here ... 
+    public int captureRate;
 
-    //AWS fields
+    private int frames = 0;
+    private RenderTexture arCamTexture;
+    Texture2D tex;
+
+
+    WaitForEndOfFrame frameEnd = new WaitForEndOfFrame();
+
     static private AWSClient _C;
 
     [System.Serializable]
@@ -41,22 +51,36 @@ public class WriteStream : MonoBehaviour
     {
         public System.DateTime ApproximateCaptureTime;
         public int FrameCount;
-        byte[] ImageBytes; 
+        public byte[] ImageBytes;
+
 
         public FramePackage(System.DateTime time, int count, byte[] data)
         {
             this.ApproximateCaptureTime = time;
             this.FrameCount = count;
-            this.ImageBytes = data; 
+            this.ImageBytes = data;
         }
+
+        public string serialize(){
+            return JsonConvert.SerializeObject(this);
+        }
+
     }
+
 
     // Use this for initialization
     void Start()
     {
         _C = GetComponent<AWSClient>();
+        Camera arCam = this.GetComponent<Camera>();
+        arCamTexture = new RenderTexture(arCam.pixelWidth, arCam.pixelHeight, 16, RenderTextureFormat.ARGB32);
+        arCamTexture.Create();
+        arCam.targetTexture = arCamTexture;
 
-#if DEBUG_Webcam        
+        tex = new Texture2D(arCamTexture.width, arCamTexture.height);
+
+    #region Webcam
+#if DEBUG_Webcam
         defaultBackground = background.texture;
         WebCamDevice[] devices = WebCamTexture.devices;
 
@@ -76,18 +100,22 @@ public class WriteStream : MonoBehaviour
             return;
         }
 
-
         webCam.Play();
         background.texture = webCam;
         camAvailable = true;
-#endif    
+#endif
+    #endregion
+    
     }
 
 
     void Update()
     {
-#if DEBUG_Webcam
         frames++;
+
+        #region webcam
+#if DEBUG_Webcam
+
         Texture2D t = new Texture2D(1280, 720);
 
         if (!camAvailable)
@@ -96,7 +124,6 @@ public class WriteStream : MonoBehaviour
         }
 
         if (!isInitialized && webCam.didUpdateThisFrame) {
-
 
             data = new Color32[webCam.width * webCam.height];
             print(webCam.width + "height" + webCam.height);
@@ -109,33 +136,38 @@ public class WriteStream : MonoBehaviour
             t.Resize(128, 72);
             t.Apply();
             byte[] b = Color32ArrayToByteArray(t.GetPixels32());
+            
+            //File.WriteAllBytes(Application.dataPath + "/StreamingAssets/testbytefile.txt", b );
 
 #endif
-#if DEBUG_PrintStreamBytes 
-            File.WriteAllBytes(Application.dataPath + "/StreamingAssets/testbytefile.txt", b );
-#endif
-#if DEBUG_Webcam
-            FramePackage dataToStream = new FramePackage(System.DateTime.UtcNow,frames,b);
-            string encodedDataToStream = System.Convert.ToBase64String(ObjectSerializationExtension.SerializeToByteArray(dataToStream));
-            print(encodedDataToStream.Length);
-            _C.PutRecord(encodedDataToStream, "FrameStream", (response) =>{});
-        }   
+        #endregion
 
-#endif
-    }
-
-    // A helper function to convert a color32 array to a byte array 
-    private static byte[] Color32ArrayToByteArray(Color32[] colors)
-    {
-        byte[] bytes = new byte[colors.Length * 4];
-        for (int i = 0; i < bytes.Length / 4; i += 4)
-        {
-            bytes[i] = colors[i].r;
-            bytes[i + 1] = colors[i].g;
-            bytes[i + 2] = colors[i].b;
-            bytes[i + 3] = colors[i].a;
+        if(frames % captureRate == 0){
+            StartCoroutine(ExportFrame());
         }
-        return bytes;
     }
+
+
+    public IEnumerator ExportFrame()
+    {
+        yield return frameEnd;
+        tex.Resize(arCamTexture.width, arCamTexture.height);
+        tex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
+        tex.Apply();
+
+        TextureScale.Bilinear(tex, tex.width / 2, tex.height / 2);
+
+        byte[] frameBytes = tex.EncodeToJPG();
+
+        //Debug to write texture into PNG
+        File.WriteAllBytes(Application.dataPath + System.String.Format( "/../SavedScreen{0}.jpg", frames), frameBytes);
+
+        FramePackage dataToStream = new FramePackage(System.DateTime.UtcNow, frames, frameBytes);
+        string JSONdataToStream = dataToStream.serialize();
+
+        Debug.Log("Sending image to Kinesis");
+        //_C.PutRecord(JSONdataToStream, "FrameStream", (response) =>{});
+    }
+
 
 }
