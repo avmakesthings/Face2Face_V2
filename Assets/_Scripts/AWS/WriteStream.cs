@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.iOS;
@@ -65,8 +66,6 @@ public class WriteStream : MonoBehaviour
         }
 
     }
-
-
 
 
     // Use this for initialization
@@ -158,15 +157,12 @@ public class WriteStream : MonoBehaviour
 
         TextureScale.Bilinear(tex, tex.width / 10, tex.height / 10);
 
-        //Debug to write texture into PNG
-        //byte[] bytes = tex.EncodeToPNG();
-        //File.WriteAllBytes(Application.dataPath + "/../SavedScreen.png", bytes);
+        byte[] frameBytes = tex.EncodeToJPG();
 
-        byte[] b = Color32ArrayToByteArray(tex.GetPixels32());
-        //FramePackage dataToStream = new FramePackage(System.DateTime.UtcNow.ToString(),frames,b);
-        FramePackage dataToStream = new FramePackage(System.DateTime.UtcNow, frames, b);
-        Debug.Log(dataToStream.ApproximateCaptureTime);
-        //string JSONdataToStream = JsonUtility.ToJson(dataToStream);
+        //Debug to write texture into PNG
+        //File.WriteAllBytes(Application.dataPath + "/../SavedScreen.png", frameBytes);
+
+        FramePackage dataToStream = new FramePackage(System.DateTime.UtcNow, frames, frameBytes);
         string JSONdataToStream = dataToStream.serialize();
 
         Debug.Log("Sending image to Kinesis");
@@ -174,32 +170,4 @@ public class WriteStream : MonoBehaviour
     }
 
 
-    // A helper function to convert a color32 array to a byte array 
-    private static byte[] Color32ArrayToByteArray(Color32[] colors)
-    {
-        byte[] bytes = new byte[colors.Length * 4];
-        for (int i = 0; i < bytes.Length / 4; i += 4)
-        {
-            bytes[i] = colors[i].r;
-            bytes[i + 1] = colors[i].g;
-            bytes[i + 2] = colors[i].b;
-            bytes[i + 3] = colors[i].a;
-        }
-        return bytes;
-    }
-
-
-    // A helper function to convert a JSON string to a byte array
-    public static byte[] JsonStringToByteArray(string jsonString)
-    {
-        var encoding = new UTF8Encoding();
-        return encoding.GetBytes(jsonString.Substring(1, jsonString.Length - 2));
-    }
-
-
-    public static string Base64Encode(string plainText)
-    {
-        var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-        return System.Convert.ToBase64String(plainTextBytes);
-    }
 }
