@@ -152,7 +152,7 @@ public class WriteStream : MonoBehaviour
     {
         yield return frameEnd;
         tex.Resize(arCamTexture.width, arCamTexture.height);
-        tex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
+        tex.ReadPixels(new Rect(0, 0, arCamTexture.width, arCamTexture.height), 0, 0);
         tex.Apply();
 
         TextureScale.Bilinear(tex, tex.width / 2, tex.height / 2);
