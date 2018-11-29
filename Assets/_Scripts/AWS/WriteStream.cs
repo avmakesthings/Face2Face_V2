@@ -165,8 +165,8 @@ public class WriteStream : MonoBehaviour
         FramePackage dataToStream = new FramePackage(System.DateTime.UtcNow, frames, frameBytes);
         string JSONdataToStream = dataToStream.serialize();
 
-        //Debug.Log("Sending image to Kinesis");
-        //_C.PutRecord(JSONdataToStream, "FrameStream", (response) =>{});
+        Debug.Log("Sending image to Kinesis");
+        _C.PutRecord(JSONdataToStream, "FrameStream", (response) =>{});
     }
 
 
