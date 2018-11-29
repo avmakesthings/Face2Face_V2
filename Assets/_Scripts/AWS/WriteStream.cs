@@ -160,7 +160,7 @@ public class WriteStream : MonoBehaviour
         byte[] frameBytes = tex.EncodeToJPG();
 
         //Debug to write texture into PNG
-        File.WriteAllBytes(Application.dataPath + System.String.Format( "/../SavedScreen{0}.jpg", frames), frameBytes);
+        //File.WriteAllBytes(Application.dataPath + System.String.Format( "/../SavedScreen{0}.jpg", frames), frameBytes);
 
         FramePackage dataToStream = new FramePackage(System.DateTime.UtcNow, frames, frameBytes);
         string JSONdataToStream = dataToStream.serialize();
