@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.iOS;
 
-
+[RequireComponent(typeof(MeshRenderer))]
+[RequireComponent(typeof(MeshFilter))]
 public class FaceVisualizer : MonoBehaviour {
 
 	[SerializeField]
@@ -31,6 +32,8 @@ public class FaceVisualizer : MonoBehaviour {
 		config.alignment = UnityARAlignment.UnityARAlignmentGravity;
 		config.enableLightEstimation = true;
 
+        //Debug.Log("arkit face session configured");
+
 		if (config.IsSupported) {
 			
 			m_session.RunWithConfig (config);
@@ -48,7 +51,7 @@ public class FaceVisualizer : MonoBehaviour {
 	{
 		gameObject.transform.localPosition = UnityARMatrixOps.GetPosition (anchorData.transform);
 		gameObject.transform.localRotation = UnityARMatrixOps.GetRotation (anchorData.transform);
-	
+        //Debug.Log("face added");
 	}
 
 	void FaceUpdated (ARFaceAnchor anchorData)
@@ -59,7 +62,7 @@ public class FaceVisualizer : MonoBehaviour {
 
 		//draw face mesh
 		updateDebugFaceMesh(anchorData);
-
+        //Debug.Log("face updated");
 	}
 
 
@@ -67,11 +70,14 @@ public class FaceVisualizer : MonoBehaviour {
 	{
 		meshFilter.mesh = null;
 		faceDebugMesh = null;
+        //Debug.Log("face removed");
 	}	
 
 
 	void createDebugFaceMesh(ARFaceAnchor anchorData){
-		faceDebugMesh = new Mesh ();
+		
+        //Debug.Log("create debug face mesh");
+        faceDebugMesh = new Mesh ();
 		meshFilter.mesh = faceDebugMesh;
 
 		drawBBox();
@@ -81,6 +87,8 @@ public class FaceVisualizer : MonoBehaviour {
 
 
 	void updateDebugFaceMesh(ARFaceAnchor anchorData){
+
+        //Debug.Log("update debug face mesh");
 
 		if(faceDebugMesh == null){
 			createDebugFaceMesh(anchorData);

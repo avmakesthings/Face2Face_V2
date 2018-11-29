@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Scenes/Main_AR.unity
     guid: 35b6d6e8cbe264e339e34c2035b16cf8
+  - enabled: 0
+    path: Assets/UnityARKitPlugin/Examples/FaceTracking/FaceAnchorScene.unity
+    guid: 46e299c2ec1244fbaa1b9b14e2ab198a
   m_configObjects: {}

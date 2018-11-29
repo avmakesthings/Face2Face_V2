@@ -23,6 +23,7 @@ public class ARCameraTracker : MonoBehaviour {
 	{
 		sessionStarted = true;
 		UnityARSessionNativeInterface.ARFrameUpdatedEvent -= FirstFrameUpdate;
+
 	}
 
 	// Update is called once per frame

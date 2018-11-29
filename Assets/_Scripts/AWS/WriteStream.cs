@@ -152,7 +152,7 @@ public class WriteStream : MonoBehaviour
     {
         yield return frameEnd;
         tex.Resize(arCamTexture.width, arCamTexture.height);
-        tex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
+        tex.ReadPixels(new Rect(0, 0, arCamTexture.width, arCamTexture.height), 0, 0);
         tex.Apply();
 
         TextureScale.Bilinear(tex, tex.width / 2, tex.height / 2);
@@ -160,13 +160,13 @@ public class WriteStream : MonoBehaviour
         byte[] frameBytes = tex.EncodeToJPG();
 
         //Debug to write texture into PNG
-        File.WriteAllBytes(Application.dataPath + System.String.Format( "/../SavedScreen{0}.jpg", frames), frameBytes);
+        //File.WriteAllBytes(Application.dataPath + System.String.Format( "/../SavedScreen{0}.jpg", frames), frameBytes);
 
         FramePackage dataToStream = new FramePackage(System.DateTime.UtcNow, frames, frameBytes);
         string JSONdataToStream = dataToStream.serialize();
 
         Debug.Log("Sending image to Kinesis");
-        //_C.PutRecord(JSONdataToStream, "FrameStream", (response) =>{});
+        _C.PutRecord(JSONdataToStream, "FrameStream", (response) =>{});
     }
 
 

@@ -3,7 +3,7 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -11,5 +11,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efa163296ae7840cb80b9e3beb5f0857, type: 3}
   m_Name: ARKitSettings
   m_EditorClassIdentifier: 
-  m_ARKitUsesFacetracking: 0
-  AppRequiresARKit: 0
+  m_ARKitUsesFacetracking: 1
+  AppRequiresARKit: 1
