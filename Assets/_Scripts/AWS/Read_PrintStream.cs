@@ -3,29 +3,39 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using FaceData;
 using System.Text;
 
 public class Read_PrintStream : MonoBehaviour {
-
+    
 	public GameObject AWSClientObject;
-	public Text ageText;
+    public Text nameText;
+    public Text profileURLText;
+    public Text ageText;
 	public Text genderText;
 	public Text emotionText;
 	//public Text mustacheText;
 	//public Text glassesText;
 	//public Text beardText;
 	string emotionStr;
+    private List<PersonData> attendeeDataset;
+    public Dictionary<string, PersonData> nameLookUp;
 
 	// Use this for initialization
 	void  Start() {
 		StartCoroutine("TestClient");
+
+        FaceMatchLookup faceMatchLookup = new FaceMatchLookup();
+        attendeeDataset = faceMatchLookup.createAttendeeDataset();
+        nameLookUp = faceMatchLookup.nameLookupTable;
 
 	}
 
 	void HandleError(Exception e){
 		Debug.LogError(e);
 	}
+
+
 
 	IEnumerator TestClient(){
 		yield return null;// new WaitForSeconds(1f);
@@ -42,11 +52,15 @@ public class Read_PrintStream : MonoBehaviour {
 					try{
 
 						string recordString = Encoding.ASCII.GetString(awsRecord.Data.ToArray());
-
 						Rekog.Record record = Rekog.Record.Deserialize(recordString);
 
-                        Debug.Log(record);
-                        //Debug.Log(record.rekog_face_matches);
+
+                        if(record.dynamodb_face_match_name != ""){
+                            lookupMatchedUserData(record.dynamodb_face_match_name);
+                            nameText.text = record.dynamodb_face_match_name;
+                        }
+
+
 						if(record.rekog_face_details.Count > 0 ){
 							printAge(record.rekog_face_details[0].AgeRange.Low, record.rekog_face_details[0].AgeRange.High);
 							printGender(record.rekog_face_details[0].Gender.Value, record.rekog_face_details[0].Gender.Confidence);
@@ -100,6 +114,24 @@ public class Read_PrintStream : MonoBehaviour {
 		string s = String.Format("{0}% {1} \n", confidence.ToString("n2"), myEmotion);
 		return s;
 	}
+
+
+    void lookupMatchedUserData(string faceMatchName)
+    {
+
+        PersonData matchedFaceData = new PersonData();
+
+        if (nameLookUp.TryGetValue(faceMatchName, out matchedFaceData))
+        {
+            profileURLText.text = matchedFaceData.profileURL;
+        }
+        else
+        {
+            Debug.Log("There was no matched face data");
+            profileURLText.text = "Unknown";
+        }
+
+    }
 
 
 }

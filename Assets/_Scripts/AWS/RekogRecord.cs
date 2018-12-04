@@ -264,6 +264,7 @@ namespace Rekog{
         //similatiry ?? 
     }
 
+
     public struct FaceDetails{
         public float Confidence;
         public BooleanFaceDetail Eyeglasses;
@@ -290,7 +291,8 @@ namespace Rekog{
         public string rekog_orientation_correction;
         public string frame_id;
         public string approx_capture_timestamp;
-        public string processed_timestamp;        
+        public string processed_timestamp;
+        public string dynamodb_face_match_name;
         public List<FaceDetails> rekog_face_details;
         public List<FaceMatches> rekog_face_matches;
 
