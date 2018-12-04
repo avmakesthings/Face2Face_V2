@@ -14,10 +14,12 @@ public class Read_PrintStream : MonoBehaviour {
     public Text ageText;
 	public Text genderText;
 	public Text emotionText;
-	//public Text mustacheText;
-	//public Text glassesText;
-	//public Text beardText;
-	string emotionStr;
+    //public Text mustacheText;
+    //public Text glassesText;
+    //public Text beardText;
+
+    public RawImage testTexture;
+    string emotionStr;
     private List<PersonData> attendeeDataset;
     public Dictionary<string, PersonData> nameLookUp;
 
@@ -124,6 +126,11 @@ public class Read_PrintStream : MonoBehaviour {
         if (nameLookUp.TryGetValue(faceMatchName, out matchedFaceData))
         {
             profileURLText.text = matchedFaceData.profileURL;
+            string profileImagePath = matchedFaceData.profileImagePath;
+            string trimmedStr = System.IO.Path.GetFileNameWithoutExtension(profileImagePath.Remove(0, 2));
+            Debug.Log(trimmedStr);
+            testTexture.texture = (Texture2D)Resources.Load(trimmedStr);
+
         }
         else
         {
