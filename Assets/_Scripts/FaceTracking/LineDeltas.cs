@@ -57,7 +57,7 @@ public class LineDeltas : MonoBehaviour {
 
                 GL.Begin (GL.LINES);
                 for (int j = 0; j < lines[i].Count; ++j) {
-                    float t = (float)j / (float)lines[i].Count;
+                    //float t = (float)j / (float)lines[i].Count;
                     //GL.Color (Color.Lerp(Color.clear, m_Color, t));
                     GL.Color(m_Color);
 
