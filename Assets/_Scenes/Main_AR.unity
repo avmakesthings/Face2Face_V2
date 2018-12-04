@@ -1367,7 +1367,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Color: {r: 0.3791327, g: 0.33490568, b: 1, a: 1}
-  m_Tail: 7
+  m_Tail: 6
 --- !u!33 &1056446897
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -1388,6 +1388,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   meshFilter: {fileID: 1056446897}
   faceBoxMaterial: {fileID: 2100000, guid: 28d65e5c5fbc84962ae5e340232df69a, type: 2}
+  crosshair: {fileID: 2800000, guid: c2fa8b328a92a4299b37b86e22e96142, type: 3}
+  position:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
 --- !u!4 &1056446899
 Transform:
   m_ObjectHideFlags: 0
@@ -1907,8 +1914,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 95}
-  m_SizeDelta: {x: 566.9, y: 22.5}
+  m_AnchoredPosition: {x: 0, y: 98.37}
+  m_SizeDelta: {x: 566.9, y: 15.76}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1395130472
 MonoBehaviour:
