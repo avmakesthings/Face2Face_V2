@@ -12,9 +12,9 @@ public class Read_PrintStream : MonoBehaviour {
 	public Text ageText;
 	public Text genderText;
 	public Text emotionText;
-	public Text mustacheText;
-	public Text glassesText;
-	public Text beardText;
+	//public Text mustacheText;
+	//public Text glassesText;
+	//public Text beardText;
 	string emotionStr;
 
 	// Use this for initialization
