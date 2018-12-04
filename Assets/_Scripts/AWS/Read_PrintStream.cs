@@ -45,8 +45,8 @@ public class Read_PrintStream : MonoBehaviour {
 
 						Rekog.Record record = Rekog.Record.Deserialize(recordString);
 
-						// Debug.Log(record);
-
+                        // Debug.Log(record);
+                        //Debug.Log(record.rekog_face_matches);
 						if(record.rekog_face_details.Count > 0 ){
 							printAge(record.rekog_face_details[0].AgeRange.Low, record.rekog_face_details[0].AgeRange.High);
 							printGender(record.rekog_face_details[0].Gender.Value, record.rekog_face_details[0].Gender.Confidence);

@@ -80,7 +80,7 @@ public class FaceVisualizer : MonoBehaviour {
         faceDebugMesh = new Mesh ();
 		meshFilter.mesh = faceDebugMesh;
 
-		drawBBox();
+		//drawBBox();
 		updateDebugFaceMesh(anchorData);
 
 	}
@@ -117,10 +117,4 @@ public class FaceVisualizer : MonoBehaviour {
 		bBox.GetComponent<Renderer>().material = faceBoxMaterial;
 	}
 
-
-	void updateBBox(Mesh bMesh){
-
-
-
-	}
 }

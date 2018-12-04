@@ -5,6 +5,8 @@
 /[Bb]uilds/
 /Assets/AssetStoreTools*
 /Assets/_Scripts/Config/
+/Python/Config/
+/Python/env/
 
 # Custom
 /Assets/_Audio

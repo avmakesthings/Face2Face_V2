@@ -256,6 +256,14 @@ namespace Rekog{
         public float Brightness;
     }
 
+    public struct FaceMatches{
+        public BoundingBox boundingBox;
+        public string FaceID;
+        public float Confidence;
+        public string ImageID;
+        //similatiry ?? 
+    }
+
     public struct FaceDetails{
         public float Confidence;
         public BooleanFaceDetail Eyeglasses;
@@ -283,7 +291,8 @@ namespace Rekog{
         public string frame_id;
         public string approx_capture_timestamp;
         public string processed_timestamp;        
-        public List<FaceDetails> rekog_face_details; 
+        public List<FaceDetails> rekog_face_details;
+        public List<FaceMatches> rekog_face_matches;
 
         public static Record Deserialize(string jsonString)
         {   
