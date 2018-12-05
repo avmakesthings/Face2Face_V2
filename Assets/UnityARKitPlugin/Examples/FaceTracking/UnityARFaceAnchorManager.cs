@@ -55,6 +55,7 @@ public class UnityARFaceAnchorManager : MonoBehaviour {
 	void FaceRemoved (ARFaceAnchor anchorData)
 	{
 		anchorPrefab.SetActive (false);
+        Debug.Log("face removed");
 	}
 
 

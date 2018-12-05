@@ -64,11 +64,13 @@ public class Read_PrintStream : MonoBehaviour {
 						string recordString = Encoding.ASCII.GetString(awsRecord.Data.ToArray());
 						Rekog.Record record = Rekog.Record.Deserialize(recordString);
 
-                        Debug.Log(record);
                         if(record.dynamodb_face_match_name != ""){
-                            Debug.Log(record.dynamodb_face_match_name);
+                            Debug.Log(String.Format("Matched name is {0} and confidence is {1}", record.dynamodb_face_match_name, record.rekog_face_matches[0].face.Confidence));
+                            //Debug.Log(record.approx_capture_timestamp + record.processed_timestamp);
                             lookupMatchedUserData(record.dynamodb_face_match_name);
                             nameText.text = record.dynamodb_face_match_name;
+                        }else {
+                            Debug.Log("no match");
                         }
 
 						if(record.rekog_face_details.Count > 0 ){
@@ -80,8 +82,8 @@ public class Read_PrintStream : MonoBehaviour {
 								string s = printEmotion(emotion.Type,emotion.Confidence);
 								emotionStr = emotionStr + s;
 							}
-							//emotionText.text = emotionStr;
 
+							//emotionText.text = emotionStr;
 							//printConfidence(record.rekog_face_details[0].Mustache.Confidence, record.rekog_face_details[0].Mustache.Value,mustacheText);
 							//printConfidence(record.rekog_face_details[0].Beard.Confidence,record.rekog_face_details[0].Beard.Value ,beardText);
 							//printConfidence(record.rekog_face_details[0].Eyeglasses.Confidence, record.rekog_face_details[0].Eyeglasses.Value, glassesText);
@@ -144,7 +146,7 @@ public class Read_PrintStream : MonoBehaviour {
                 imgFolderPath = "interested_files/";
             }
             string profileImagePath = matchedFaceData.profileImagePath;
-            string trimmedImgPath = "going_files/" + System.IO.Path.GetFileNameWithoutExtension(profileImagePath.Remove(0, 1));
+            string trimmedImgPath = imgFolderPath + System.IO.Path.GetFileNameWithoutExtension(profileImagePath.Remove(0, 1));
             Texture2D texture = Resources.Load(trimmedImgPath) as Texture2D;
             testTexture.texture = texture;
 
@@ -162,7 +164,7 @@ public class Read_PrintStream : MonoBehaviour {
         }
     }
 
-    void resetDataFields(string resetString){
+    public void resetDataFields(string resetString){
         
         nameText.text = resetString;
         ageText.text= resetString;
@@ -170,7 +172,7 @@ public class Read_PrintStream : MonoBehaviour {
         profileURLText.text = resetString;
         placeFrom.text = resetString;
         placesWorked.text = resetString;
-
+        testTexture.texture = null;
     }
 
 }

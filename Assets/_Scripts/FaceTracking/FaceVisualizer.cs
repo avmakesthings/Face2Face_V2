@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.iOS;
+using UnityEngine.Events;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
@@ -10,7 +12,6 @@ public class FaceVisualizer : MonoBehaviour {
 
 	[SerializeField]
 	private MeshFilter meshFilter;
-	
 	private Mesh faceDebugMesh;
 	private UnityARSessionNativeInterface m_session;
 
@@ -24,6 +25,11 @@ public class FaceVisualizer : MonoBehaviour {
 	public Material faceBoxMaterial;
     public Texture2D crosshair;
     public Rect position;
+
+    [SerializeField]
+    public UnityEvent faceAdded;
+    public UnityEvent faceRemoved;
+    public Text nameText;
 
 	// Use this for initialization
 	void Start () {
@@ -43,7 +49,6 @@ public class FaceVisualizer : MonoBehaviour {
 			UnityARSessionNativeInterface.ARFaceAnchorAddedEvent += FaceAdded;
 			UnityARSessionNativeInterface.ARFaceAnchorUpdatedEvent += FaceUpdated;
 			UnityARSessionNativeInterface.ARFaceAnchorRemovedEvent += FaceRemoved;
-
 		}
 	}
 
@@ -66,32 +71,46 @@ public class FaceVisualizer : MonoBehaviour {
 	{
 		gameObject.transform.localPosition = UnityARMatrixOps.GetPosition (anchorData.transform);
 		gameObject.transform.localRotation = UnityARMatrixOps.GetRotation (anchorData.transform);
+        faceAdded.Invoke();
+        Debug.Log("face added");
 	}
 
 
 
 	void FaceUpdated (ARFaceAnchor anchorData)
 	{
+        if (anchorData.isTracked)
+        {
+            if (!FaceActive)
+            {
+                FaceActive = true;
+                FaceAdded(anchorData);
+            }
 
-		gameObject.transform.localPosition = UnityARMatrixOps.GetPosition (anchorData.transform);
-		gameObject.transform.localRotation = UnityARMatrixOps.GetRotation (anchorData.transform);
+            gameObject.transform.localPosition = UnityARMatrixOps.GetPosition (anchorData.transform);
+    		gameObject.transform.localRotation = UnityARMatrixOps.GetRotation (anchorData.transform);
 
-		updateDebugFaceMesh(anchorData);
+    		updateDebugFaceMesh(anchorData);
 
-        if(!FaceActive){
-            FaceActive = true;
+
+
+        }
+        if(!anchorData.isTracked)
+        {
+            StartCoroutine(invokeEventWithDelay(faceRemoved, 3));
+            if(FaceActive){
+                FaceActive = false;
+                FaceRemoved(anchorData);
+            }
         }
 	}
 
 
-
-
 	void FaceRemoved (ARFaceAnchor anchorData)
 	{
-        FaceActive = false;
+        Debug.Log("face removed");
         meshFilter.mesh = null;
 		faceDebugMesh = null;
-
 	}	
 
 
@@ -106,7 +125,6 @@ public class FaceVisualizer : MonoBehaviour {
 
         meshbounds = faceDebugMesh.bounds;
         rendBounds = this.GetComponent<MeshRenderer>().bounds;
-
 	}
 
 
@@ -142,6 +160,13 @@ public class FaceVisualizer : MonoBehaviour {
     {
         //GUI.DrawTexture(position, crosshair);
     }
+     
+    IEnumerator invokeEventWithDelay(UnityEvent myEvent, int delay){
+        yield return new WaitForSeconds(delay);
+        myEvent.Invoke();
+    }
+
+
 
 
 }
