@@ -77,7 +77,7 @@ def writeToAWS(filename):
 
 
 
-writeToAWS(goingJSON)
+writeToAWS(interstedJSON)
 
 # Get list of objects for indexing
 # images=[('TestImages/anastasia1.jpg','Anastasia Victor','https://www.facebook.com/anastasia.victor'),

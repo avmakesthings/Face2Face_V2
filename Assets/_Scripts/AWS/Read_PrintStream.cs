@@ -64,8 +64,9 @@ public class Read_PrintStream : MonoBehaviour {
 						string recordString = Encoding.ASCII.GetString(awsRecord.Data.ToArray());
 						Rekog.Record record = Rekog.Record.Deserialize(recordString);
 
+                        Debug.Log(record);
                         if(record.dynamodb_face_match_name != ""){
-                            
+                            Debug.Log(record.dynamodb_face_match_name);
                             lookupMatchedUserData(record.dynamodb_face_match_name);
                             nameText.text = record.dynamodb_face_match_name;
                         }
