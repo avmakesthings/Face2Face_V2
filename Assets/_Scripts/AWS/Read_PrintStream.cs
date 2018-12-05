@@ -10,18 +10,24 @@ public class Read_PrintStream : MonoBehaviour {
     
 	public GameObject AWSClientObject;
     public Text nameText;
-    public Text profileURLText;
     public Text ageText;
-	public Text genderText;
+    public Text genderText;
+    public Text profileURLText;
+    public Text placeFrom;
+    public Text placesWorked;
 	public Text emotionText;
     //public Text mustacheText;
     //public Text glassesText;
     //public Text beardText;
-
     public RawImage testTexture;
+
+
+    public Dictionary<string, PersonData> nameLookUp;
+
+    public RectTransform infoLayout;
     string emotionStr;
     private List<PersonData> attendeeDataset;
-    public Dictionary<string, PersonData> nameLookUp;
+
 
 	// Use this for initialization
 	void  Start() {
@@ -30,6 +36,7 @@ public class Read_PrintStream : MonoBehaviour {
         FaceMatchLookup faceMatchLookup = new FaceMatchLookup();
         attendeeDataset = faceMatchLookup.createAttendeeDataset();
         nameLookUp = faceMatchLookup.nameLookupTable;
+
 
 	}
 
@@ -53,15 +60,15 @@ public class Read_PrintStream : MonoBehaviour {
 					
 					try{
 
+                        resetDataFields("");
 						string recordString = Encoding.ASCII.GetString(awsRecord.Data.ToArray());
 						Rekog.Record record = Rekog.Record.Deserialize(recordString);
 
-
                         if(record.dynamodb_face_match_name != ""){
+                            
                             lookupMatchedUserData(record.dynamodb_face_match_name);
                             nameText.text = record.dynamodb_face_match_name;
                         }
-
 
 						if(record.rekog_face_details.Count > 0 ){
 							printAge(record.rekog_face_details[0].AgeRange.Low, record.rekog_face_details[0].AgeRange.High);
@@ -80,6 +87,8 @@ public class Read_PrintStream : MonoBehaviour {
 
 
 						}
+
+
 					} catch(Exception e){
 						HandleError(e);
 					}
@@ -98,7 +107,7 @@ public class Read_PrintStream : MonoBehaviour {
 	}
 
 	void printGender(string myGender, float confidence){
-		string s = String.Format("{0}%\n{1}", (int)confidence, myGender);
+		string s = String.Format("{0}% {1}", (int)confidence, myGender);
 		genderText.text = s;
 	}
 
@@ -120,25 +129,47 @@ public class Read_PrintStream : MonoBehaviour {
 
     void lookupMatchedUserData(string faceMatchName)
     {
-
+        
         PersonData matchedFaceData = new PersonData();
+        string imgFolderPath;
 
         if (nameLookUp.TryGetValue(faceMatchName, out matchedFaceData))
         {
             profileURLText.text = matchedFaceData.profileURL;
+
+            if(matchedFaceData.attendingEvent){
+                imgFolderPath = "going_files/";
+            }else{
+                imgFolderPath = "interested_files/";
+            }
             string profileImagePath = matchedFaceData.profileImagePath;
-            string trimmedStr = System.IO.Path.GetFileNameWithoutExtension(profileImagePath.Remove(0, 2));
-            Debug.Log(trimmedStr);
-            testTexture.texture = (Texture2D)Resources.Load(trimmedStr);
+            string trimmedImgPath = "going_files/" + System.IO.Path.GetFileNameWithoutExtension(profileImagePath.Remove(0, 1));
+            Texture2D texture = Resources.Load(trimmedImgPath) as Texture2D;
+            testTexture.texture = texture;
+
+            if(matchedFaceData.publicProfile){
+                placeFrom.text = String.Join(" / ",matchedFaceData.additionalPublicPersonData.places);
+                placesWorked.text = String.Join(" / ", matchedFaceData.additionalPublicPersonData.education);
+            }
+
 
         }
         else
         {
             Debug.Log("There was no matched face data");
-            profileURLText.text = "Unknown";
+            profileURLText.text = "";
         }
-
     }
 
+    void resetDataFields(string resetString){
+        
+        nameText.text = resetString;
+        ageText.text= resetString;
+        genderText.text = resetString;
+        profileURLText.text = resetString;
+        placeFrom.text = resetString;
+        placesWorked.text = resetString;
+
+    }
 
 }

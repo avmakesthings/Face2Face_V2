@@ -70,5 +70,10 @@ public class LineDeltas : MonoBehaviour {
             GL.PopMatrix ();
         }
     }
+
+    void Update()
+    {
         
+    }
+
 }
