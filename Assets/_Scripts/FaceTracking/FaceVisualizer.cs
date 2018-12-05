@@ -71,7 +71,7 @@ public class FaceVisualizer : MonoBehaviour {
 	{
 		gameObject.transform.localPosition = UnityARMatrixOps.GetPosition (anchorData.transform);
 		gameObject.transform.localRotation = UnityARMatrixOps.GetRotation (anchorData.transform);
-        faceAdded.Invoke();
+        //faceAdded.Invoke();
         Debug.Log("face added");
 	}
 
@@ -100,7 +100,7 @@ public class FaceVisualizer : MonoBehaviour {
             StartCoroutine(invokeEventWithDelay(faceRemoved, 3));
             if(FaceActive){
                 FaceActive = false;
-                FaceRemoved(anchorData);
+                //FaceRemoved(anchorData);
             }
         }
 	}
@@ -119,10 +119,8 @@ public class FaceVisualizer : MonoBehaviour {
 		
         faceDebugMesh = new Mesh ();
 		meshFilter.mesh = faceDebugMesh;
-		//drawBBox();  // this is for the 3d bounding box
+		drawBBox();  // this is for the 3d bounding box
 		updateDebugFaceMesh(anchorData);
-        //basePos = anchorData.transform;
-
         meshbounds = faceDebugMesh.bounds;
         rendBounds = this.GetComponent<MeshRenderer>().bounds;
 	}
@@ -144,15 +142,15 @@ public class FaceVisualizer : MonoBehaviour {
 
 
 
-	//void drawBBox(){
-	//	bounds = this.GetComponent<MeshRenderer>().bounds;
-	//	basePos = bounds.center;
-	//	bBox = GameObject.CreatePrimitive(PrimitiveType.Cube);
-	//	bBox.transform.parent = transform;
-	//	bBox.transform.position = basePos;
-	//	bBox.transform.localScale = new Vector3(0.3f, 0.25f, 0.11f);
-	//	bBox.GetComponent<Renderer>().material = faceBoxMaterial;
-	//}
+	void drawBBox(){
+	    Bounds bounds = this.GetComponent<MeshRenderer>().bounds;
+		basePos = bounds.center;
+		bBox = GameObject.CreatePrimitive(PrimitiveType.Cube);
+		bBox.transform.parent = transform;
+		bBox.transform.position = basePos;
+		bBox.transform.localScale = new Vector3(0.2f, 0.22f, 0f);
+		bBox.GetComponent<Renderer>().material = faceBoxMaterial;
+	}
 
 
 
