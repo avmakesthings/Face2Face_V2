@@ -84,7 +84,8 @@ public class FaceVisualizer : MonoBehaviour {
             if (!FaceActive)
             {
                 FaceActive = true;
-                FaceAdded(anchorData);
+                faceAdded.Invoke();
+                //FaceAdded(anchorData);
             }
 
             gameObject.transform.localPosition = UnityARMatrixOps.GetPosition (anchorData.transform);
