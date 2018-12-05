@@ -1,87 +1,104 @@
 ﻿using System.Collections;
+
+
 using System.Collections.Generic;
+
+
 using UnityEngine;
 
-public class LineDeltas : MonoBehaviour {
 
-    public Color m_Color;
-    public int m_Tail;
 
+public class LineDeltas : MonoBehaviour
+
+{
+    public float cutoff;
     private MeshFilter filter;
+    private LineRenderer lineRenderer;
     private Vector3[] vertices;
-    private List<List<Vector3>> lines = new List<List<Vector3>>();
+    private Vector3[] lastVertices;
+    private bool[] changed;
+    private int vertexCount;
 
 
+    void Start()
 
-    public void OnRenderObject()
     {
-        
+        StartCoroutine(DrawDeltas());
     }
 
 
+    IEnumerator DrawDeltas()
 
-
-    //static Material lineMaterial;
-    //static void CreateLineMaterial()
-    //{
-    //    if (!lineMaterial)
-    //    {
-    //        // Unity has a built-in shader that is useful for drawing
-    //        // simple colored things.
-    //        Shader shader = Shader.Find("Hidden/Internal-Colored");
-    //        lineMaterial = new Material(shader);
-    //        lineMaterial.hideFlags = HideFlags.HideAndDontSave;
-    //        // Turn on alpha blending
-    //        lineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-    //        lineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-    //        // Turn backface culling off
-    //        lineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
-    //        // Turn off depth writes
-    //        lineMaterial.SetInt("_ZWrite", 0);
-    //    }
-    //}
-
-    //public void OnRenderObject()
-    //{
-    //    filter = GetComponent<MeshFilter>();
-    //    if (filter.sharedMesh != null) {
-
-    //        vertices = filter.sharedMesh.vertices;
-
-    //        CreateLineMaterial ();
-    //        lineMaterial.SetPass (0);
-    //        GL.PushMatrix ();
-    //        GL.MultMatrix (transform.localToWorldMatrix);
-
-    //        for (int i = 0; i < vertices.Length; ++i) {
-    //            if (lines.Count-1 < i) {
-    //                lines.Add (new List<Vector3> ());
-    //            }
-
-    //            if (lines [i].Count == m_Tail) {
-    //                lines [i].RemoveAt(0);
-    //            }
-    //            lines [i].Add (vertices [i]);
-
-    //            GL.Begin (GL.LINES);
-    //            for (int j = 0; j < lines[i].Count; ++j) {
-    //                //float t = (float)j / (float)lines[i].Count;
-    //                //GL.Color (Color.Lerp(Color.clear, m_Color, t));
-    //                GL.Color(m_Color);
-
-    //                GL.Vertex3 (lines[i][j].x, lines[i][j].y, lines[i][j].z);
-    //            }
-    //            GL.End ();
-    //        }
-
-
-    //        GL.PopMatrix ();
-    //    }
-    //}
-
-    void Update()
     {
-        
+        while (true)
+
+        {
+            filter = GetComponent<MeshFilter>();
+            lineRenderer = GetComponent<LineRenderer>();
+            if (filter.sharedMesh != null && lineRenderer)
+
+            {
+                vertices = filter.sharedMesh.vertices;
+
+                if (lastVertices == null || changed == null)
+
+                {
+                    vertexCount = filter.sharedMesh.vertices.Length;
+                    lastVertices = new Vector3[vertexCount];
+                    changed = new bool[vertexCount];
+
+                }
+
+
+                Vector3 v;
+                Vector3 nextV;
+                int changedCount = 0;
+                for (int i = 0; i < vertexCount; ++i)
+
+                {
+
+                    v = lastVertices[i];
+                    nextV = vertices[i];
+                    if (v != nextV && Vector3.Distance(v, nextV) > cutoff)
+
+                    {
+
+                        changed[i] = true;
+                        changedCount++;
+
+                    }
+
+                    else
+
+                    {
+                        changed[i] = false;
+                    }
+
+                }
+
+
+                lineRenderer.SetVertexCount(changedCount);
+
+                int j = 0;
+                for (int i = 0; i < vertexCount; i++)
+
+                {
+
+                    if (changed[i])
+                    {
+                        lineRenderer.SetPosition(j, vertices[i]);
+                        j++;
+                    }
+
+                }
+
+                lastVertices = vertices;
+
+            }
+            yield return new WaitForSeconds(0.125f);
+
+        }
+
     }
 
 }

@@ -9,6 +9,7 @@ using System.Text;
 public class Read_PrintStream : MonoBehaviour {
     
 	public GameObject AWSClientObject;
+    public Text matchText;
     public Text nameText;
     public Text ageText;
     public Text genderText;
@@ -63,9 +64,10 @@ public class Read_PrintStream : MonoBehaviour {
 						Rekog.Record record = Rekog.Record.Deserialize(recordString);
 
                         if(record.dynamodb_face_match_name != ""){
-                            Debug.Log(String.Format("Matched name is {0} and confidence is {1}", record.dynamodb_face_match_name, record.rekog_face_matches[0].face.Confidence));
+                            //Debug.Log(String.Format("Matched name is {0} and confidence is {1}", record.dynamodb_face_match_name, record.rekog_face_matches[0].face.Confidence));
                             lookupMatchedUserData(record.dynamodb_face_match_name);
                             nameText.text = record.dynamodb_face_match_name;
+                            matchText.text = String.Format("{0} %", record.rekog_face_matches[0].face.Confidence);
                         }else {
                             Debug.Log("no match");
                         }
@@ -168,6 +170,7 @@ public class Read_PrintStream : MonoBehaviour {
         placeFrom.text = resetString;
         placesWorked.text = resetString;
         testTexture.texture = null;
+        matchText.text = resetString;
     }
 
 }
