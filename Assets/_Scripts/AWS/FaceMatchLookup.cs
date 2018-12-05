@@ -48,11 +48,10 @@ namespace FaceData {
 
     public class FaceMatchLookup
     {
-
-
+        
         private string goingJSON = "going";
         private string goingpublicJSON = "going-public-profile";
-        //private string interestedJSON = "interested";
+        private string interestedJSON = "interested";
 
         string path = "attendingdata/";
 
@@ -64,15 +63,29 @@ namespace FaceData {
             
             List<PersonData> attendeeDataset;
             List<AdditionalPublicPersonData> attendeePublicDataset;
+            List<PersonData> interestedDataset;
 
             nameLookupTable = new Dictionary<string, PersonData>();
             Dictionary<string, AdditionalPublicPersonData> publicDataLookupTable = new Dictionary<string, AdditionalPublicPersonData>();
 
             var goingJsonTextFile = Resources.Load<TextAsset>(path + goingJSON);
             var goingPublicJsonTextFile = Resources.Load<TextAsset>(path + goingpublicJSON);
+            var interestedJsonTextFile = Resources.Load<TextAsset>(path + interestedJSON);
 
             attendeeDataset = JsonConvert.DeserializeObject<List<PersonData>>(goingJsonTextFile.text);
             attendeePublicDataset = JsonConvert.DeserializeObject<List<AdditionalPublicPersonData>>(goingPublicJsonTextFile.text); 
+            interestedDataset = JsonConvert.DeserializeObject<List<PersonData>>(interestedJsonTextFile.text);
+
+            foreach(PersonData interested in interestedDataset){
+                interested.attendingEvent = false;
+            }
+
+            foreach (PersonData attendee in attendeeDataset)
+            {
+                attendee.attendingEvent = true;
+            }
+
+            attendeeDataset.AddRange(interestedDataset);
 
             foreach (AdditionalPublicPersonData publicAttendee in attendeePublicDataset)
             {
@@ -80,14 +93,12 @@ namespace FaceData {
             }
 
             foreach (PersonData attendee in attendeeDataset){
-                attendee.attendingEvent = true;
-                AdditionalPublicPersonData temp;
 
+                AdditionalPublicPersonData temp;
                 if(publicDataLookupTable.TryGetValue(attendee.name, out temp)){
                     attendee.additionalPublicPersonData = temp;
                     attendee.publicProfile = true;
                 }
-                 
                 nameLookupTable.Add(attendee.name, attendee);
             }
 

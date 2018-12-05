@@ -156,11 +156,13 @@ public class WriteStream : MonoBehaviour
         tex.Apply();
 
         TextureScale.Bilinear(tex, tex.width / 2, tex.height / 2);
+        Texture2D croppedTex = TextureTools.ResampleAndCrop(tex,tex.width,tex.height/2+100);
 
-        byte[] frameBytes = tex.EncodeToJPG();
+
+        byte[] frameBytes = croppedTex.EncodeToJPG();
 
         //Debug to write texture into PNG
-        File.WriteAllBytes(Application.dataPath + System.String.Format( "/../SavedScreen{0}.jpg", frames), frameBytes);
+        //File.WriteAllBytes(Application.dataPath + System.String.Format( "/../SavedScreen{0}.jpg", frames), frameBytes);
 
         FramePackage dataToStream = new FramePackage(System.DateTime.UtcNow, frames, frameBytes);
         string JSONdataToStream = dataToStream.serialize();

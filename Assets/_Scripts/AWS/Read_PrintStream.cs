@@ -36,8 +36,6 @@ public class Read_PrintStream : MonoBehaviour {
         FaceMatchLookup faceMatchLookup = new FaceMatchLookup();
         attendeeDataset = faceMatchLookup.createAttendeeDataset();
         nameLookUp = faceMatchLookup.nameLookupTable;
-
-
 	}
 
 	void HandleError(Exception e){
@@ -66,7 +64,6 @@ public class Read_PrintStream : MonoBehaviour {
 
                         if(record.dynamodb_face_match_name != ""){
                             Debug.Log(String.Format("Matched name is {0} and confidence is {1}", record.dynamodb_face_match_name, record.rekog_face_matches[0].face.Confidence));
-                            //Debug.Log(record.approx_capture_timestamp + record.processed_timestamp);
                             lookupMatchedUserData(record.dynamodb_face_match_name);
                             nameText.text = record.dynamodb_face_match_name;
                         }else {
@@ -154,8 +151,6 @@ public class Read_PrintStream : MonoBehaviour {
                 placeFrom.text = String.Join(" / ",matchedFaceData.additionalPublicPersonData.places);
                 placesWorked.text = String.Join(" / ", matchedFaceData.additionalPublicPersonData.education);
             }
-
-
         }
         else
         {
