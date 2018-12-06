@@ -72,7 +72,7 @@ public class FaceVisualizer : MonoBehaviour {
 		gameObject.transform.localPosition = UnityARMatrixOps.GetPosition (anchorData.transform);
 		gameObject.transform.localRotation = UnityARMatrixOps.GetRotation (anchorData.transform);
         //faceAdded.Invoke();
-        Debug.Log("face added");
+
 	}
 
 
@@ -85,6 +85,7 @@ public class FaceVisualizer : MonoBehaviour {
             {
                 FaceActive = true;
                 faceAdded.Invoke();
+                Debug.Log("face added");
                 //FaceAdded(anchorData);
             }
 
@@ -98,9 +99,12 @@ public class FaceVisualizer : MonoBehaviour {
         }
         if(!anchorData.isTracked)
         {
-            StartCoroutine(invokeEventWithDelay(faceRemoved, 3));
+            
             if(FaceActive){
                 FaceActive = false;
+                Debug.Log("face removed");
+                faceRemoved.Invoke();
+                //StartCoroutine(invokeEventWithDelay(faceRemoved, 3));
                 //FaceRemoved(anchorData);
             }
         }
@@ -109,7 +113,7 @@ public class FaceVisualizer : MonoBehaviour {
 
 	void FaceRemoved (ARFaceAnchor anchorData)
 	{
-        Debug.Log("face removed");
+        
         meshFilter.mesh = null;
 		faceDebugMesh = null;
 	}	
