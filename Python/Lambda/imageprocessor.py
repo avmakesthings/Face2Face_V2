@@ -2,7 +2,8 @@
 # Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
 #     http://aws.amazon.com/asl/
 # or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions and limitations under the License.
-# Modified by Anastasia Victor to run with Unity 
+
+# Modified by Anastasia Victor to run with Unity, analyze an image from a kinesis stream, detect faces if they are present in the image and cross-check to see if the face is part of a known Rekognition dace dataset in DynamoDB
 
 
 from __future__ import print_function
@@ -18,7 +19,7 @@ import pytz
 from pytz import timezone
 from copy import deepcopy
 import io
-from PIL import Image
+
 
 
 def load_config():
@@ -32,53 +33,40 @@ def convert_ts(ts, config):
     #lambda_tz = timezone('US/Pacific')
     tz = timezone(config['timezone'])
     utc = pytz.utc
-    
     utc_dt = utc.localize(datetime.datetime.utcfromtimestamp(ts))
-
     localized_dt = utc_dt.astimezone(tz)
-
     return localized_dt
-
 
 def process_image(event, context):
 
     #Initialize clients
     rekog_client = boto3.client('rekognition')
     kinesis_client = boto3.client('kinesis')
+    dynamodb_client = boto3.client('dynamodb')
 
     #Load config
     config = load_config()
-
     output_kinesis_stream = config["output_kinesis_stream"]
     rekog_attributes = ['ALL']
     rekog_features_blacklist = ("Landmarks", "Emotions", "Pose", "Quality", "BoundingBox", "Confidence")
     
-    #format_str = '%m/%d/%Y %H:%M:%S' # The format string for datetime string conversion in Unity
-    
-    #Iterate on frames fetched from Kinesis
+    # Iterate on frames fetched from Kinesis
     for record in event['Records']:
+        item = None
+        time_start_process_record = datetime.datetime.now()
         
         try:
             #from Unity
             decoded = base64.b64decode(record['kinesis']['data'])
             frame_package =json.loads(decoded)
-            
-            #from python
-            # frame_package_b64 = record['kinesis']['data']
-            # frame_package = cPickle.loads(base64.b64decode(frame_package_b64))
     
             img_bytes = base64.decodestring(frame_package["ImageBytes"])
-            #print("these are the image bytes bloog"+img_bytes)
             approx_capture_ts = frame_package["ApproximateCaptureTime"]
-            #approx_capture_ts = datetime.datetime.strptime(frame_package["ApproximateCaptureTime"], format_str)
-
-            frame_count = frame_package["FrameCount"]
-
-            now_ts = time.time()
     
+            frame_count = frame_package["FrameCount"]
+            now_ts = time.time()
             frame_id = str(uuid.uuid4())
             processed_timestamp = decimal.Decimal(now_ts)
-            #approx_capture_timestamp = decimal.Decimal(approx_capture_ts)
             approx_capture_timestamp = str(approx_capture_ts)
     
             now = convert_ts(now_ts, config)
@@ -87,62 +75,82 @@ def process_image(event, context):
             day = now.strftime("%d")
             hour = now.strftime("%H")
             
+            time_start_detectfaces = datetime.datetime.now()
+            detectfacesresponse = rekog_client.detect_faces(
+                Image={
+                    'Bytes': img_bytes
+                },
+                Attributes=rekog_attributes,
+            )
+            time_end_detectfaces = datetime.datetime.now()
+            time_delta = time_end_detectfaces - time_start_detectfaces
+            print ("DetectFaces took {}ms".format(time_delta))
+
+            faceMatchName = ""
+            faceMatches = []
             
-            try:    
-                detectfacesresponse = rekog_client.detect_faces(
-                    Image={
-                        'Bytes': img_bytes
-                    },
-                    Attributes=rekog_attributes,
-                )
-            except:
-                print("error with passing data to rekog client ")
-    
-            try:
-                searchfacesresponse = rekognition.search_faces_by_image(
-                    CollectionId='gray-area-event',
-                    Image={'Bytes':img_bytes}                                       
-                )
-            except:
-                print("error with search faces response")
+            time_start_searchfaces = datetime.datetime.now()
+            searchfacesresponse = rekog_client.search_faces_by_image(
+                CollectionId='gray-area-event',
+                Image={'Bytes':img_bytes}                                       
+            )
+            time_end_searchfaces = datetime.datetime.now()
+            time_delta = time_end_searchfaces - time_start_searchfaces
+            print ("SearchFaces took {}ms".format(time_delta))
+            print('just got search face response' + str(searchfacesresponse['FaceMatches']))
+            
+            faceMatches = searchfacesresponse['FaceMatches']
 
-
-            for match in response['FaceMatches']:
-                print (match['Face']['FaceId'],match['Face']['Confidence'])
+            if(len(searchfacesresponse['FaceMatches']) > 0):
+                match = searchfacesresponse['FaceMatches'][0]
                 
-                face = dynamodb.get_item(
+                print ("Face match found, FaceID: {0} and Confidence {1}".format(match['Face']['FaceId'],match['Face']['Confidence']) )
+                
+                time_start_getDBItem = datetime.datetime.now()
+                face = dynamodb_client.get_item(
                     TableName='gray_area_collection',  
                     Key={'RekognitionId': {'S': match['Face']['FaceId']}}
                     )
+                time_end_getDBItem = datetime.datetime.now()
+                time_delta = time_end_getDBItem - time_start_getDBItem
+                print ("GetDBItem took {}ms".format(time_delta))
                 
                 if 'Item' in face:
+                    faceMatchName = face['Item']['FullName']['S']
                     print (face['Item']['FullName']['S'])
                 else:
-                    print ('no match found in person lookup')
+                    print ('no match found in person lookup')    
 
-
-
+            
+            print("Populating item")    
             item = {
                 'frame_id': frame_id,
                 'processed_timestamp' : str(processed_timestamp),
                 'approx_capture_timestamp' : str(approx_capture_timestamp),
-                'rekog_face_details' : response['FaceDetails'],
+                'rekog_face_details' : detectfacesresponse['FaceDetails'],
+                'rekog_face_matches' : faceMatches,
+                'dynamodb_face_match_name' : faceMatchName,
                 'rekog_orientation_correction' : 
-                    response['OrientationCorrection'] 
-                    if 'OrientationCorrection' in response else 'ROTATE_0'
+                    detectfacesresponse['OrientationCorrection'] 
+                    if 'OrientationCorrection' in detectfacesresponse else 'ROTATE_0'
             }
+            
+        except Exception as e:
+            print("Error:  "+ str(e))
     
-            # Write to stream
+        # Write to stream
+        
+        if item is not None:
+            print("write to stream")
             response = kinesis_client.put_record(
                 StreamName=output_kinesis_stream,
                 Data=json.dumps(item),
                 PartitionKey="partitionkey"
             )
-            
-        except Exception as e:
-            print("Error processing Frame Stream:  "+ str(e))
-            
-
+        time_end_process_record = datetime.datetime.now()
+        time_delta = time_end_process_record - time_start_process_record
+        print ("Process Record took total of {}ms".format(time_delta))
+        
     print('Successfully processed {} records.'.format(len(event['Records'])))
     return
 
