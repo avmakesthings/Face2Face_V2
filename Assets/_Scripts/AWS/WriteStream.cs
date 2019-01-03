@@ -19,8 +19,8 @@ using Utils;
 [RequireComponent(typeof(AWSConfig))]
 public class WriteStream : MonoBehaviour
 {
-
-    #region Webcam_fields
+    
+#region Webcam_fields
 #if DEBUG_Webcam
     private bool camAvailable;
     private bool isInitialized = false;
@@ -32,11 +32,11 @@ public class WriteStream : MonoBehaviour
     public RawImage background;
     public AspectRatioFitter fit;
 #endif
-    #endregion
+#endregion
 
 
     public int captureRate;
-    public bool sendToAWS;
+
     private int frames = 0;
     private RenderTexture arCamTexture;
     Texture2D tex;
@@ -78,7 +78,6 @@ public class WriteStream : MonoBehaviour
         arCam.targetTexture = arCamTexture;
 
         tex = new Texture2D(arCamTexture.width, arCamTexture.height);
-
 
     #region Webcam
 #if DEBUG_Webcam
@@ -143,7 +142,7 @@ public class WriteStream : MonoBehaviour
 #endif
         #endregion
 
-        if(frames % captureRate == 0 && sendToAWS ){
+        if(frames % captureRate == 0){
             StartCoroutine(ExportFrame());
         }
     }
@@ -157,8 +156,8 @@ public class WriteStream : MonoBehaviour
         tex.Apply();
 
         TextureScale.Bilinear(tex, tex.width / 2, tex.height / 2);
-        Texture2D croppedTex = TextureTools.ResampleAndCrop(tex,tex.width,tex.height/2+100);
-        byte[] frameBytes = croppedTex.EncodeToJPG();
+
+        byte[] frameBytes = tex.EncodeToJPG();
 
         //Debug to write texture into PNG
         //File.WriteAllBytes(Application.dataPath + System.String.Format( "/../SavedScreen{0}.jpg", frames), frameBytes);
@@ -166,18 +165,9 @@ public class WriteStream : MonoBehaviour
         FramePackage dataToStream = new FramePackage(System.DateTime.UtcNow, frames, frameBytes);
         string JSONdataToStream = dataToStream.serialize();
 
-
         Debug.Log("Sending image to Kinesis");
-        _C.PutRecord(JSONdataToStream, "FrameStream", (response) => { }); 
-
+        _C.PutRecord(JSONdataToStream, "FrameStream", (response) =>{});
     }
 
-    public void activate(){
-        sendToAWS = true;
-    }
-
-    public void deactive(){
-        sendToAWS = false;
-    }
 
 }
